@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Models;
 using WebApi.Models.DTOs;
@@ -17,9 +18,9 @@ namespace WebApi.Controllers
 			_db = db;
 		}
 		[HttpGet]
-		public IActionResult GetAll()
+		public async Task<IActionResult> GetAll()
 		{
-			var regions = _db.RegionSet.ToList();
+			var regions =await _db.RegionSet.ToListAsync();
 			var regionDTO = new List<RegionDTO>();
 			foreach (var region in regions)
 			{
@@ -41,11 +42,11 @@ namespace WebApi.Controllers
 			else
 			{
 				RegionDTO regionDTO = new RegionDTO() { Id = region.Id, Code = region.Code, Name = region.Name, RegionImgUrl = region.RegionImgUrl };
-				return Ok(region);
+				return Ok(regionDTO);
 			}
 		}
 		[HttpPost]
-		public IActionResult Create([FromBody] CreatedRegionDTO createdRegionDTO)
+		public async Task<IActionResult> Create([FromBody] CreatedRegionDTO createdRegionDTO)
 		{
 			var region = new Region()
 			{
@@ -53,8 +54,8 @@ namespace WebApi.Controllers
 				Name = createdRegionDTO.Name,
 				RegionImgUrl = createdRegionDTO.RegionImgUrl
 			};
-			_db.RegionSet.Add(region);
-			_db.SaveChanges();
+			await _db.RegionSet.AddAsync(region);
+			await _db.SaveChangesAsync();
 
 			var regionDTO = new RegionDTO()
 			{
@@ -68,6 +69,45 @@ namespace WebApi.Controllers
 
 
 
+		}
+		[HttpPut]
+		[Route("{ID:Guid}")]
+		public async Task<IActionResult> Update([FromRoute] Guid ID, [FromBody] UpdatedRegionDTO updatedRegionDTO)
+		{
+			var regionModel = _db.RegionSet.Find(ID);
+			if (regionModel == null)
+			{
+				return NotFound();
+			}
+
+			regionModel.Code = updatedRegionDTO.Code;
+			regionModel.Name = updatedRegionDTO.Name;
+			regionModel.RegionImgUrl = updatedRegionDTO.RegionImgUrl;
+			await _db.SaveChangesAsync();
+
+			var regionDto = new RegionDTO()
+			{
+				Id = regionModel.Id,
+				Code = regionModel.Code,
+				Name = regionModel.Name,
+				RegionImgUrl = regionModel.RegionImgUrl
+			};
+			return Ok(regionDto);
+		}
+
+		[HttpDelete]
+		[Route("{ID:Guid}")]
+
+		public async Task<IActionResult> Delete([FromRoute] Guid ID)
+		{
+			var regionModel = _db.RegionSet.Find(ID);
+			if (regionModel == null)
+			{
+				return NotFound();
+			}
+			_db.RegionSet.Remove(regionModel);
+			await _db.SaveChangesAsync();
+			return Ok();
 		}
 	}
 }
