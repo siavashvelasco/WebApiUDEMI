@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Data;
+using WebApi.Models;
 using WebApi.Models.DTOs;
 
 namespace WebApi.Controllers
@@ -42,6 +43,31 @@ namespace WebApi.Controllers
 				RegionDTO regionDTO = new RegionDTO() { Id = region.Id, Code = region.Code, Name = region.Name, RegionImgUrl = region.RegionImgUrl };
 				return Ok(region);
 			}
+		}
+		[HttpPost]
+		public IActionResult Create([FromBody] CreatedRegionDTO createdRegionDTO)
+		{
+			var region = new Region()
+			{
+				Code = createdRegionDTO.Code,
+				Name = createdRegionDTO.Name,
+				RegionImgUrl = createdRegionDTO.RegionImgUrl
+			};
+			_db.RegionSet.Add(region);
+			_db.SaveChanges();
+
+			var regionDTO = new RegionDTO()
+			{
+				Id = region.Id,
+				Code = region.Code,
+				Name = region.Name,
+				RegionImgUrl = region.RegionImgUrl
+			};
+			return CreatedAtAction(nameof(Get), new { idddd = regionDTO.Id }, regionDTO);
+
+
+
+
 		}
 	}
 }
