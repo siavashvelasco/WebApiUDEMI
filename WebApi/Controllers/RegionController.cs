@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Models;
 using WebApi.Models.DTOs;
+using WebApi.Repository;
 
 namespace WebApi.Controllers
 {
@@ -12,15 +13,17 @@ namespace WebApi.Controllers
 	public class RegionController : ControllerBase
 	{
 		public OurDbContext _db { get; set; }
+		public IRegionRepository RegionRepository { get; set; }
 
-		public RegionController(OurDbContext db)
+		public RegionController(OurDbContext db,IRegionRepository regionRepository)
 		{
 			_db = db;
+			RegionRepository = regionRepository;
 		}
 		[HttpGet]
 		public async Task<IActionResult> GetAll()
 		{
-			var regions =await _db.RegionSet.ToListAsync();
+			var regions = await RegionRepository.GetAllAsync();
 			var regionDTO = new List<RegionDTO>();
 			foreach (var region in regions)
 			{
