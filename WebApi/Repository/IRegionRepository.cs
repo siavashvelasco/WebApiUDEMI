@@ -9,7 +9,9 @@ namespace WebApi.Repository
 	{
 
 		public Task<List<Region>> GetAllAsync() ;
-
-
+		public Task<Region> GetByIdAsync(Guid id);
+		public Task<Region> CreateAsync(Region region);
+		public Task<Region> DeleteAsync(Region region);
+		public Task<Region> UpdateAsync(Guid regionId, Region region);
 	}
 }

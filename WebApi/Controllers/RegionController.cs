@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using WebApi.Data;
 using WebApi.Models;
 using WebApi.Models.DTOs;
@@ -14,59 +16,48 @@ namespace WebApi.Controllers
 	{
 		public OurDbContext _db { get; set; }
 		public IRegionRepository RegionRepository { get; set; }
+		public IMapper Mapper { get; }
 
-		public RegionController(OurDbContext db,IRegionRepository regionRepository)
+		public RegionController(OurDbContext db, IRegionRepository regionRepository, IMapper mapper)
 		{
 			_db = db;
 			RegionRepository = regionRepository;
+			Mapper = mapper;
 		}
 		[HttpGet]
 		public async Task<IActionResult> GetAll()
 		{
 			var regions = await RegionRepository.GetAllAsync();
-			var regionDTO = new List<RegionDTO>();
-			foreach (var region in regions)
-			{
-				regionDTO.Add(new RegionDTO { Id = region.Id, Code = region.Code, Name = region.Name, RegionImgUrl = region.RegionImgUrl });
-			}
+			var regionDTO = Mapper.Map<List<RegionDTO>>(regions);
+
 			return Ok(regionDTO);
 		}
 
 
 		[HttpGet]
 		[Route("{idddd:guid}")]
-		public IActionResult Get([FromRoute] Guid idddd)
+		public async Task<IActionResult> Get([FromRoute] Guid idddd)
 		{
-			var region = _db.RegionSet.Find(idddd);
+			var region = await RegionRepository.GetByIdAsync(idddd);
 			if (region == null)
 			{
 				return NotFound();
 			}
-			else
-			{
-				RegionDTO regionDTO = new RegionDTO() { Id = region.Id, Code = region.Code, Name = region.Name, RegionImgUrl = region.RegionImgUrl };
-				return Ok(regionDTO);
-			}
+
+			RegionDTO regionDTO = Mapper.Map<RegionDTO>(region);
+			return Ok(regionDTO);
+
 		}
 		[HttpPost]
 		public async Task<IActionResult> Create([FromBody] CreatedRegionDTO createdRegionDTO)
 		{
-			var region = new Region()
-			{
-				Code = createdRegionDTO.Code,
-				Name = createdRegionDTO.Name,
-				RegionImgUrl = createdRegionDTO.RegionImgUrl
-			};
-			await _db.RegionSet.AddAsync(region);
-			await _db.SaveChangesAsync();
 
-			var regionDTO = new RegionDTO()
-			{
-				Id = region.Id,
-				Code = region.Code,
-				Name = region.Name,
-				RegionImgUrl = region.RegionImgUrl
-			};
+			var region = Mapper.Map<Region>(createdRegionDTO);
+			region = await RegionRepository.CreateAsync(region);
+
+
+			var regionDTO = Mapper.Map<RegionDTO>(region);
+
 			return CreatedAtAction(nameof(Get), new { idddd = regionDTO.Id }, regionDTO);
 
 
@@ -77,24 +68,16 @@ namespace WebApi.Controllers
 		[Route("{ID:Guid}")]
 		public async Task<IActionResult> Update([FromRoute] Guid ID, [FromBody] UpdatedRegionDTO updatedRegionDTO)
 		{
-			var regionModel = _db.RegionSet.Find(ID);
+			var region = Mapper.Map<Region>(updatedRegionDTO);
+			var regionModel = await RegionRepository.UpdateAsync(ID, region);
 			if (regionModel == null)
 			{
 				return NotFound();
 			}
 
-			regionModel.Code = updatedRegionDTO.Code;
-			regionModel.Name = updatedRegionDTO.Name;
-			regionModel.RegionImgUrl = updatedRegionDTO.RegionImgUrl;
-			await _db.SaveChangesAsync();
 
-			var regionDto = new RegionDTO()
-			{
-				Id = regionModel.Id,
-				Code = regionModel.Code,
-				Name = regionModel.Name,
-				RegionImgUrl = regionModel.RegionImgUrl
-			};
+
+			var regionDto = Mapper.Map<RegionDTO>(regionModel);
 			return Ok(regionDto);
 		}
 
@@ -103,14 +86,14 @@ namespace WebApi.Controllers
 
 		public async Task<IActionResult> Delete([FromRoute] Guid ID)
 		{
-			var regionModel = _db.RegionSet.Find(ID);
+			var regionModel = await RegionRepository.GetByIdAsync(ID);
 			if (regionModel == null)
 			{
 				return NotFound();
 			}
-			_db.RegionSet.Remove(regionModel);
-			await _db.SaveChangesAsync();
-			return Ok();
+			regionModel = await RegionRepository.DeleteAsync(regionModel);
+			var regionDto = Mapper.Map<RegionDTO>(regionModel);
+			return Ok(regionDto);
 		}
 	}
 }
