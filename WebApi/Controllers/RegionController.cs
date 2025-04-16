@@ -49,7 +49,7 @@ namespace WebApi.Controllers
 
 		}
 		[HttpPost]
-		public async Task<IActionResult> Create([FromBody] CreatedRegionDTO createdRegionDTO)
+		public async Task<IActionResult> Create([FromBody] CreateRegionDTO createdRegionDTO)
 		{
 
 			var region = Mapper.Map<Region>(createdRegionDTO);
@@ -66,7 +66,7 @@ namespace WebApi.Controllers
 		}
 		[HttpPut]
 		[Route("{ID:Guid}")]
-		public async Task<IActionResult> Update([FromRoute] Guid ID, [FromBody] UpdatedRegionDTO updatedRegionDTO)
+		public async Task<IActionResult> Update([FromRoute] Guid ID, [FromBody] UpdateRegionDTO updatedRegionDTO)
 		{
 			var region = Mapper.Map<Region>(updatedRegionDTO);
 			var regionModel = await RegionRepository.UpdateAsync(ID, region);
@@ -86,12 +86,11 @@ namespace WebApi.Controllers
 
 		public async Task<IActionResult> Delete([FromRoute] Guid ID)
 		{
-			var regionModel = await RegionRepository.GetByIdAsync(ID);
+			var regionModel = await RegionRepository.DeleteAsync(ID);
 			if (regionModel == null)
 			{
 				return NotFound();
 			}
-			regionModel = await RegionRepository.DeleteAsync(regionModel);
 			var regionDto = Mapper.Map<RegionDTO>(regionModel);
 			return Ok(regionDto);
 		}

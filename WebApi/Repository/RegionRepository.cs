@@ -39,12 +39,16 @@ namespace WebApi.Repository
 		
 
 
-		public async Task<Region?> DeleteAsync(Region region)
+		public async Task<Region?> DeleteAsync(Guid id)
 		{
-			 _db.RegionSet.Remove(region);
+			var existingWalk = await _db.RegionSet.FindAsync(_db.RegionSet.Find(id));
+			if (existingWalk == null) {
+				return null;
+			}
+			 _db.RegionSet.Remove(existingWalk);
 			await _db.SaveChangesAsync();
 
-			return region;
+			return existingWalk;
 		}
 
 public async Task<Region?> UpdateAsync(Guid regionId, Region region)

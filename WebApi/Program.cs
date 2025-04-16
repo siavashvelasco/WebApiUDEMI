@@ -13,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<OurDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
+builder.Services.AddScoped<IWalksRepository, WalkRepository>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 var app = builder.Build();
 

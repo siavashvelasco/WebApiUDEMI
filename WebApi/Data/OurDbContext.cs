@@ -21,6 +21,8 @@ namespace WebApi.Data
 				new Difficulty() { Id = Guid.Parse("e6063157-694d-42d7-bbc1-9a3286fbe820"), Name = "Hard" }
 			};
 			modelBuilder.Entity<Difficulty>().HasData(difficultyList);
+
+
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿namespace WebApi.Models.DTOs
 {
-	public class CreatedRegionDTO
+	public class CreateRegionDTO
 	{
 		public string Code { get; set; }
 		public string Name { get; set; }
